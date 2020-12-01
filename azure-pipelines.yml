@@ -1,22 +1,48 @@
-# Maven
-# Build your Java project and run tests with Apache Maven.
-# Add steps that analyze code, save build artifacts, deploy, and more:
-# https://docs.microsoft.com/azure/devops/pipelines/languages/java
+apiVersion: '2018-10-01'
+location: uksouth
+name: gatling-aci
+properties:
+  containers:
+    - name: gatling
+      properties:
+        environmentVariables: []
+        image: denvazh/gatling
+        ports:
+          - port: 80
+        resources:
+          requests:
+            cpu: 1.0
+            memoryInGB: 1.5
+        volumeMounts:
+          - mountPath: /opt/gatling/conf
+            name: conf
+          - mountPath: /opt/gatling/user-files
+            name: user-files
+          - mountPath: /opt/gatling/results
+            name: results
+  osType: Linux
+  restartPolicy: Never
+  ipAddress:
+    type: Public
+    ports:
+      - port: 80
+    dnsNameLabel: gatling-test
+  volumes:
+    - name: conf
+      azureFile:
+        sharename: conf
+        storageAccountName: stgatling
+        storageAccountKey: vJLcezqsv+xppQFQ+eVKFBrPNbRWa83Rvc4qYyqDMTCR7AkqY3QUzReHbn+rdUk3tORzJ9Rtv5b3kV7jhlvB5Q==
+    - name: user-files
+      azureFile:
+        sharename: user-files
+        storageAccountName: stgatling
+        storageAccountKey: vJLcezqsv+xppQFQ+eVKFBrPNbRWa83Rvc4qYyqDMTCR7AkqY3QUzReHbn+rdUk3tORzJ9Rtv5b3kV7jhlvB5Q==
+    - name: results
+      azureFile:
+        sharename: results
+        storageAccountName: stgatling
+        storageAccountKey: vJLcezqsv+xppQFQ+eVKFBrPNbRWa83Rvc4qYyqDMTCR7AkqY3QUzReHbn+rdUk3tORzJ9Rtv5b3kV7jhlvB5Q==
 
-trigger:
-- main
-
-pool:
-  vmImage: 'ubuntu-latest'
-
-steps:
-- task: Maven@3
-  inputs:
-    mavenPomFile: 'pom.xml'
-    mavenOptions: '-Xmx3072m'
-    javaHomeOption: 'JDKVersion'
-    jdkVersionOption: '1.8'
-    jdkArchitectureOption: 'x64'
-    publishJUnitResults: true
-    testResultsFiles: '**/surefire-reports/TEST-*.xml'
-    goals: 'package'
+tags: {}
+type: Microsoft.ContainerInstance/containerGroups
